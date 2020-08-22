@@ -1,1 +1,0 @@
-# Kliyent-servernyye-iOS-prilozheniya

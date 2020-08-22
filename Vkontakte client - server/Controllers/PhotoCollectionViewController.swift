@@ -13,8 +13,9 @@ private let reuseIdentifier = "Cell"
 
 class PhotoCollectionViewController: UICollectionViewController {
     let networkService = NetworkService()
-
     private lazy var photos = try? Realm().objects(Photo.self).filter("userId == %@", userId)
+    private var notificationToken: NotificationToken?
+    
     public var userId: Int?
     var friendTitle = ""
     
@@ -23,10 +24,22 @@ class PhotoCollectionViewController: UICollectionViewController {
         if let userId = userId {
             networkService.fetchPhotos(for: userId) { [weak self] photos in
                 try? RealmProvider.save(items: photos)
-                self?.collectionView.reloadData()
             }
         }
-        title = friendTitle
+        
+        notificationToken = photos?.observe { [weak self] change in
+            guard let self = self else { return }
+            switch change {
+            case .initial:
+                break
+            case .update:
+                self.collectionView.reloadData()
+            case .error(let error):
+                self.show(error)
+            }
+        }
+        
+        self.title = friendTitle
     }
 
     /*
@@ -84,5 +97,4 @@ class PhotoCollectionViewController: UICollectionViewController {
     
     }
     */
-
 }

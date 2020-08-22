@@ -11,14 +11,27 @@ import RealmSwift
 
 class MyGroupsViewController: UITableViewController {
     let netrworkService = NetworkService()
+    let realm = try! Realm()
     private let groups = try? Realm().objects(Group.self)
+    private var notificationToken: NotificationToken?
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
         netrworkService.loadGroups(token: Singleton.instance.token) { [weak self] groups in
             try? RealmProvider.save(items: groups)
-            self?.tableView.reloadData()
+        }
+        
+        notificationToken = groups?.observe { [weak self] change in
+            guard let self = self else { return }
+            switch change {
+            case .initial:
+                self.tableView.reloadData()
+            case .update(_, let deletions, let insertions, let modifications):
+                self.tableView.update(deletions: deletions, insertions: insertions, modifications: modifications)
+            case .error(let error):
+                fatalError("\(error)")
+            }
         }
 
         tableView.tableFooterView = UIView()
@@ -64,18 +77,20 @@ class MyGroupsViewController: UITableViewController {
         return true
     }
     */
-
-//    override func tableView(_ tableView: UITableView, commit editingStyle: UITableViewCell.EditingStyle, forRowAt indexPath: IndexPath) {
-//        if editingStyle == .delete {
-//            groups.remove(at: indexPath.row)
-//            tableView.deleteRows(at: [indexPath], with: .fade)
-//        }
-//    }
+    
+    override func tableView(_ tableView: UITableView, editActionsForRowAt indexPath: IndexPath) -> [UITableViewRowAction]? {
+        let editingRow = groups?[indexPath.row]
+        let deleteAction = UITableViewRowAction(style: .default, title: "Delete") { _,_ in
+            try! self.realm.write {
+                self.realm.delete(editingRow!)
+            }
+        }
+        return [deleteAction]
+    }
 
     /*
     // Override to support rearranging the table view.
     override func tableView(_ tableView: UITableView, moveRowAt fromIndexPath: IndexPath, to: IndexPath) {
-
     }
     */
 
