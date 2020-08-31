@@ -7,69 +7,74 @@
 //
 
 import UIKit
+import RealmSwift
 
 class SearchGroupTableViewController: UITableViewController {
     
+    let searchController = UISearchController(searchResultsController: nil)
+    
     
     let networkService = NetworkService()
-    private var searhGroups = [Group]()
-    
-    var filteredGroups: [Group]!
-    
-    private var searchBarIsEmpty: Bool {
-        guard let text = searchController.searchBar.text else { return false }
-        return text.isEmpty
-    }
-    private var isFiltering: Bool {
-        return searchController.isActive && !searchBarIsEmpty
-    }
-    
-    var searchController: UISearchController!
-    
+    let realm = try! Realm()
+    private let searchGroups = try? Realm().objects(SearchGroup.self)
+    private var notificationToken: NotificationToken?
+    private var timer: Timer?
+        
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        networkService.loadSearchGroups(token: Singleton.instance.token) { [weak self] groups in
-            self?.searhGroups = groups
-            self?.tableView.reloadData()
+        let realm = try! Realm()
+        try? realm.write {
+            realm.delete(searchGroups!)
         }
         
-        filteredGroups = searhGroups
+        notificationToken = searchGroups?.observe { [weak self] change in
+            guard let self = self else { return }
+            switch change {
+            case .initial:
+                self.tableView.reloadData()
+            case .update(_, let deletions, let insertions, let modifications):
+                self.tableView.update(deletions: deletions, insertions: insertions, modifications: modifications)
+            case .error(let error):
+                fatalError("\(error)")
+            }
+        }
+        
+        setupSearchBar()
         
         tableView.tableFooterView = UIView()
-        
-        searchController = UISearchController(searchResultsController: nil)
-        searchController.searchResultsUpdater = self
-        
-        searchController.searchBar.sizeToFit()
-        tableView.tableHeaderView = searchController.searchBar
-        
-        definesPresentationContext = true
+    }
+    
+    private func setupSearchBar() {
+        navigationItem.searchController = searchController
+        searchController.searchBar.delegate = self
+        navigationController?.navigationBar.prefersLargeTitles = true
+        searchController.obscuresBackgroundDuringPresentation = false
     }
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return filteredGroups.count
+        return searchGroups?.count ?? 0
     }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "SearchGroupCell") as! SearchGroupCell
         
-        let searchGroup = searhGroups[indexPath.row]
+        guard let searchGroup = searchGroups?[indexPath.row] else { return cell }
         cell.configure(with: searchGroup)
         
         return cell
     }
 }
 
-extension SearchGroupTableViewController: UISearchResultsUpdating {
-    func updateSearchResults(for searchController: UISearchController) {
-        filterContentForSearchText(searchController.searchBar.text!)
-    }
-    
-    private func filterContentForSearchText(_ searchText: String) {
-        filteredGroups = searhGroups.filter({(groupsSearch: Group) -> Bool in
-            return groupsSearch.name.lowercased().contains(searchText.lowercased())
+// MARK - UISearchBarDelegate
+extension SearchGroupTableViewController: UISearchBarDelegate {
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+        
+        timer?.invalidate()
+        timer = Timer.scheduledTimer(withTimeInterval: 1.5, repeats: false, block: { (_) in
+            self.networkService.loadSearchGroups(searchQuery: searchText) { [weak self] searchGroups in
+                try? RealmProvider.save(items: searchGroups)
+            }
         })
-        tableView.reloadData()
     }
 }

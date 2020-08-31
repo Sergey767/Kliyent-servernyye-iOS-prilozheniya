@@ -16,7 +16,7 @@ class SearchGroupCell: UITableViewCell {
     @IBOutlet weak var searchGroupName: UILabel!
     @IBOutlet weak var searchGroupImageView: UIImageView!
     
-    public func configure(with searchGroup: Group) {
+    public func configure(with searchGroup: SearchGroup) {
         
         let name = searchGroup.name
         searchGroupName.text = name

@@ -18,6 +18,8 @@ class User: Object {
     @objc dynamic var online: Int = 0
     @objc dynamic var token: String = ""
     
+    let photos = List<Photo>()
+    
     convenience init(_ json: JSON, token: String) {
         self.init()
         self.id = json["id"].intValue
@@ -25,6 +27,7 @@ class User: Object {
         self.lastName = json["last_name"].stringValue
         self.avatar = json["photo_50"].stringValue
         self.online = json["online"].intValue
+        self.photos.append(objectsIn: photos)
         
         self.token = token
     }
