@@ -6,23 +6,30 @@
 //  Copyright © 2020 appleS. All rights reserved.
 //
 
-//import Foundation
-//import SwiftyJSON
-//import RealmSwift
-//
-//class SearchGroup: Object {
-//
-//    @objc dynamic var id: Int = 0
-//    @objc dynamic var name: String = ""
-//    @objc dynamic var photo: String = ""
-//
-//    convenience init(_ json: JSON) {
-//        self.init()
-//        self.id = json["id"].intValue
-//        self.name = json["name"].stringValue
-//        self.photo = json["photo_50"].stringValue
-//    }
-//}
+import Foundation
+import SwiftyJSON
+import RealmSwift
+
+class SearchGroup: Object {
+
+    @objc dynamic var id: Int = 0
+    @objc dynamic var name: String = ""
+    @objc dynamic var photo: String = ""
+    @objc dynamic var searchQuery: String = ""
+
+    convenience init(_ json: JSON, searchQuery: String) {
+        self.init()
+        self.id = json["id"].intValue
+        self.name = json["name"].stringValue
+        self.photo = json["photo_50"].stringValue
+        
+        self.searchQuery = searchQuery
+    }
+    
+    override static func primaryKey() -> String? {
+        return "id"
+    }
+}
 
 //{
 //    "id": 43001537,

@@ -18,6 +18,8 @@ class Photo: Object {
     @objc dynamic var height: Double = 0.0
     @objc dynamic var userId: Int = 0
     
+    var friends = LinkingObjects(fromType: User.self, property: "photos")
+    
     convenience init(_ json: JSON, userId: Int) {
         self.init()
         self.id = json["id"].intValue
