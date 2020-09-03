@@ -13,7 +13,6 @@ class SearchGroupTableViewController: UITableViewController {
     
     let searchController = UISearchController(searchResultsController: nil)
     
-    
     let networkService = NetworkService()
     let realm = try! Realm()
     private let searchGroups = try? Realm().objects(SearchGroup.self)

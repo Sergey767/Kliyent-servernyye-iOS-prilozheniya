@@ -22,45 +22,19 @@ class MyFriendsViewController: UIViewController, UISearchBarDelegate {
     var friendsDictionary = [String: [User]]()
     var filterFriends = [User?]()
 
-<<<<<<< HEAD
-<<<<<<< HEAD
     override func viewDidLoad() {
         super.viewDidLoad()
         
         networkService.loadFriends(token: Singleton.instance.token) { [weak self] friends in
             //try? RealmProvider.save(items: friends)
         }
-=======
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        networkService.loadFriends(token: Singleton.instance.token) { [weak self] friends in }
->>>>>>> d4fd9c419ab78e7c480f1c7f46a6d585aa284d9f
         
         friends = try? RealmProvider.get(User.self)
         
-=======
-    
-    override func viewDidLoad() {
-        super.viewDidLoad()
-        
-        networkService.loadFriends(token: Singleton.instance.token) { [weak self] friends in }
-        
-        friends = try? RealmProvider.get(User.self)
-        
->>>>>>> bea4fc7ca1ddc1ae34e92bd72d489c32e41cd86a
         searchBar.delegate = self
         tableView.dataSource = self
         tableView.delegate = self
         
-<<<<<<< HEAD
-<<<<<<< HEAD
-        
-=======
->>>>>>> d4fd9c419ab78e7c480f1c7f46a6d585aa284d9f
-=======
->>>>>>> bea4fc7ca1ddc1ae34e92bd72d489c32e41cd86a
         filterFriends = friends?.sorted { $0.lastName < $1.lastName } as! [User?]
         filterTitleFriends()
         
@@ -98,8 +72,6 @@ class MyFriendsViewController: UIViewController, UISearchBarDelegate {
         friendsSectionTitles = []
         
         for friend in filterFriends {
-<<<<<<< HEAD
-<<<<<<< HEAD
             guard let friend = friend else { continue }
             guard let friendKey = friend.lastName.compactMap({ String($0) }).first else { return }
             if var friendValues = friendsDictionary[friendKey] {
@@ -109,25 +81,9 @@ class MyFriendsViewController: UIViewController, UISearchBarDelegate {
                 friendsDictionary[friendKey] = [friend]
             }
         }
+        
         friendsSectionTitles = [String](friendsDictionary.keys)
         friendsSectionTitles = friendsSectionTitles.sorted(by: < )
-=======
-=======
->>>>>>> bea4fc7ca1ddc1ae34e92bd72d489c32e41cd86a
-            let friendKey = String((friend?.lastName.prefix(1))!)
-            if var friendValues = friendsDictionary[friendKey] {
-                friendValues.append(friend!)
-                friendsDictionary[friendKey] = friendValues
-            } else {
-                friendsDictionary[friendKey] = [friend!]
-            }
-        }
-        friendsSectionTitles = [String](friendsDictionary.keys)
-        friendsSectionTitles = friendsSectionTitles.sorted(by: { $0 < $1 })
-<<<<<<< HEAD
->>>>>>> d4fd9c419ab78e7c480f1c7f46a6d585aa284d9f
-=======
->>>>>>> bea4fc7ca1ddc1ae34e92bd72d489c32e41cd86a
         
         tableView.reloadData()
     }
